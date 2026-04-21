@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetroCam · Darkroom Prompt Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Custom dark theme & animations */
+        body {
+            background: #0f0e0e;
+            background-image: radial-gradient(circle at 20% 30%, #1e1b1a 0%, #0a0909 100%);
+        }
+        .glass-panel {
+            background: rgba(20, 18, 18, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(180, 130, 80, 0.2);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
+        }
+        .vintage-glow {
+            box-shadow: 0 0 20px rgba(210, 150, 80, 0.15);
+        }
+        .input-dark {
+            background: #1c1816;
+            border: 1px solid #3a2e28;
+            color: #f0e6dc;
+        }
+        .input-dark:focus {
+            border-color: #b8845c;
+            box-shadow: 0 0 0 2px rgba(184, 132, 92, 0.3);
+        }
+        .btn-generate {
+            background: linear-gradient(145deg, #6f4e3a, #4f3628);
+            border: 1px solid #9f7a5c;
+            color: #f5ebe0;
+            transition: all 0.25s ease;
+        }
+        .btn-generate:hover {
+            background: linear-gradient(145deg, #8b644b, #634b3a);
+            border-color: #c99e7b;
+            transform: scale(1.01);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.4), 0 0 12px rgba(200,140,70,0.3);
+        }
+        .pulse-animation {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(184, 132, 92, 0.3); }
+            70% { box-shadow: 0 0 0 8px rgba(184, 132, 92, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(184, 132, 92, 0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s;
+        }
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -8px #00000080;
+        }
+        /* Custom scrollbar for dark */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1513; }
+        ::-webkit-scrollbar-thumb { background: #6b4f3e; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9b745a; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col items-center py-8 px-4">
+
+    <!-- Header dengan animasi -->
+    <header class="max-w-5xl w-full mb-8 text-center">
+        <div class="inline-block glass-panel rounded-3xl px-8 py-5 backdrop-blur-md">
+            <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-amber-100/90 flex items-center justify-center gap-3">
+                <i class="fas fa-film text-amber-400/80 text-3xl"></i> 
+                <span class="bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">RetroCam Darkroom</span>
+                <i class="fas fa-camera-retro text-amber-400/80 text-3xl"></i>
+            </h1>
+            <p class="text-amber-200/60 text-sm md:text-base mt-1 font-light tracking-wide">Simulasi film jadul · kamera analog · estetika vintage</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Kolom Input (Kiri) -->
+        <div class="lg:col-span-7 glass-panel rounded-2xl p-6 md:p-7 backdrop-blur-lg hover-lift transition-all">
+            <h2 class="text-xl font-semibold mb-5 pb-3 border-b border-amber-700/30 flex items-center text-amber-200">
+                <i class="fas fa-sliders-h w-6 text-amber-500"></i> Konfigurasi Foto
+            </h2>
+
+            <div class="space-y-5">
+                <!-- Deskripsi Subjek -->
+                <div>
+                    <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
+                        <i class="fas fa-pen mr-1 text-amber-600"></i> Deskripsi Subjek <span class="text-amber-400">*</span>
+                    </label>
+                    <textarea id="subject" rows="3" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all resize-none text-amber-100 placeholder:text-stone-500" placeholder="Contoh: A young woman sitting in a retro diner, drinking coffee... (Gunakan Bahasa Inggris)"></textarea>
+                </div>
+
+                <!-- Tipe Subjek (Pengganti Gender) & Ekspresi -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
+                            <i class="fas fa-cube mr-1 text-amber-600"></i> Tipe Subjek
+                        </label>
+                        <select id="entityType" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all">
+                            <option value="Person">👤 Person (Orang)</option>
+                            <option value="Object">📦 Object (Benda)</option>
+                            <option value="Animal">🐾 Animal (Hewan)</option>
+                            <option value="Landscape">🏞️ Landscape (Pemandangan)</option>
+                            <option value="Architecture">🏛️ Architecture (Bangunan)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
+                            <i class="far fa-smile mr-1 text-amber-600"></i> Ekspresi / Mood
+                        </label>
+                        <select id="expression" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all">
+                            <option value="Natural neutral expression">Natural / Netral</option>
+                            <option value="Smiling softly">Tersenyum lembut</option>
+                            <option value="Serious / Intense">Serius / Intens</option>
+                            <option value="Candid / Laughing">Candid / Tertawa</option>
+                            <option value="Pensive">Melamun / Kontemplatif</option>
+                            <option value="Joyful">Gembira</option>
+                            <option value="Mysterious">Misterius</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Kategori & Style Kamera -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
+                            <i class="fas fa-camera mr-1 text-amber-600"></i> Kategori
+                        </label>
+                        <select id="category" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all" onchange="updateStyles()">
+                            <!-- JS populate -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
+                            <i class="fas fa-film mr-1 text-amber-600"></i> Gaya Spesifik
+                        </label>
+                        <select id="style" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all">
+                            <!-- JS populate -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Pencahayaan -->
+                <div>
+                    <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
+                        <i class="fas fa-sun mr-1 text-amber-600"></i> Pencahayaan
+                    </label>
+                    <select id="lighting" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all">
+                        <!-- JS populate -->
+                    </select>
+                </div>
+
+                <!-- Opsi Midjourney & AR -->
+                <div class="mt-3 p-4 rounded-xl bg-black/20 border border-amber-800/20">
+                    <div class="flex items-center mb-3">
+                        <input type="checkbox" id="mjMode" class="w-5 h-5 accent-amber-600 bg-black/40 border-amber-700 rounded focus:ring-amber-500 cursor-pointer" checked onchange="toggleAr()">
+                        <label for="mjMode" class="ml-3 text-sm font-medium text-amber-200/80 cursor-pointer">
+                            Format Midjourney (--ar)
+                        </label>
+                    </div>
+                    <div id="arContainer" class="pl-8 transition-all duration-300">
+                        <select id="aspectRatio" class="w-full px-3 py-2 input-dark rounded-lg focus:outline-none text-sm">
+                            <option value="--ar 3:2">3:2 (35mm / Landscape)</option>
+                            <option value="--ar 4:3">4:3 (Digital Old / CRT)</option>
+                            <option value="--ar 1:1">1:1 (Square / Polaroid)</option>
+                            <option value="--ar 16:9">16:9 (Cinematic)</option>
+                            <option value="--ar 9:16">9:16 (Portrait / HP)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tombol Generate dengan animasi -->
+                <button onclick="generatePrompt()" class="w-full btn-generate font-semibold py-3.5 px-4 rounded-xl shadow-lg flex justify-center items-center gap-2 mt-2 pulse-animation">
+                    <i class="fas fa-magic text-amber-300"></i> Hasilkan Prompt
+                </button>
+            </div>
+        </div>
+
+        <!-- Kolom Hasil (Kanan) -->
+        <div class="lg:col-span-5 flex flex-col">
+            <div class="glass-panel rounded-2xl p-6 md:p-7 backdrop-blur-lg flex-1 flex flex-col">
+                <h2 class="text-xl font-semibold mb-4 pb-3 border-b border-amber-700/30 flex items-center text-amber-200">
+                    <i class="fas fa-terminal w-6 text-amber-500"></i> Hasil Prompt
+                </h2>
+                <p class="text-xs text-amber-300/60 mb-3 flex items-center gap-1"><i class="fas fa-copy"></i> Copy & paste ke AI generator</p>
+                
+                <textarea id="result" rows="15" class="w-full px-4 py-3 input-dark rounded-xl border-2 border-dashed border-amber-800/40 focus:outline-none flex-grow font-mono text-sm leading-relaxed resize-none transition-all" readonly placeholder="Prompt terstruktur akan muncul di sini..."></textarea>
+                
+                <button onclick="copyPrompt()" class="mt-4 w-full bg-amber-800/40 hover:bg-amber-700/50 text-amber-100 font-medium py-3 px-4 rounded-xl border border-amber-700/30 transition-all flex justify-center items-center gap-2 backdrop-blur-sm">
+                    <i class="far fa-copy"></i> Salin ke Clipboard
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Tips Section -->
+    <div class="max-w-5xl w-full mt-6">
+        <div class="glass-panel rounded-2xl p-5 border-l-4 border-amber-600 text-sm text-amber-200/90 flex items-start gap-3">
+            <i class="fas fa-flask text-amber-400 text-xl mt-0.5"></i>
+            <div>
+                <h3 class="font-bold mb-1 text-amber-300">💡 Tips Darkroom</h3>
+                <ul class="list-disc list-inside space-y-1 text-amber-200/70">
+                    <li>Gunakan deskripsi <span class="text-amber-300">bahasa Inggris</span> untuk hasil maksimal di Midjourney / DALL·E.</li>
+                    <li>Kategori "Phone Jadul" akan otomatis menambahkan <i>low quality, pixelated</i> agar tidak HD.</li>
+                    <li>Efek <i>date stamp</i> sering muncul otomatis di gaya Disposable / VHS.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-amber-900/90 backdrop-blur-sm text-amber-100 px-5 py-3 rounded-lg shadow-2xl transition-all duration-300 transform translate-y-10 opacity-0 flex items-center z-50 border border-amber-700/40">
+        <i id="toast-icon" class="fas fa-check-circle mr-3 text-amber-300"></i>
+        <span id="toast-message" class="font-medium">Pesan</span>
+    </div>
+
+    <script>
+        // ========== DATABASE KAMERA (sama seperti sebelumnya, hanya tampilan yang dark) ==========
+        const cameraDatabase = {
+            analog: {
+                name: "🎞️ Analog 35mm",
+                styles: [
+                    { id: "disposable", name: "Disposable 90s", prompt: "authentic 90s disposable camera aesthetic, amateur photography, high film grain, warm 35mm film stock, slightly out of focus, slight lens flare, vintage color saturation, light leaks, nostalgic 1990s vibe, glowing date stamp" },
+                    { id: "kodak_portra", name: "Kodak Portra 400", prompt: "shot on Kodak Portra 400, 35mm lens, fine film grain, realistic skin tones, cinematic lighting, analog photography, soft pastel colors, sharp focus, shallow depth of field" },
+                    { id: "fujifilm_superia", name: "Fujifilm Superia 400", prompt: "shot on Fujifilm Superia 400, analog photography, characteristic green/magenta tint, moody, contrasty, visible film grain, 35mm street photography" },
+                    { id: "cinestill_800t", name: "CineStill 800T", prompt: "shot on CineStill 800T film, cinematic night photography, red halation, glowing neon, cool shadows, film grain, tungsten white balance" },
+                    { id: "kodachrome", name: "Kodachrome 64", prompt: "shot on Kodachrome 64 film, vibrant colors, rich saturation, fine grain, classic 60s-70s magazine aesthetic" }
+                ]
+            },
+            lomography: {
+                name: "🌈 Lomography",
+                styles: [
+                    { id: "lomo_lc_a", name: "Lomo LC-A", prompt: "Lomography LC-A aesthetic, highly saturated, strong vignetting, light leaks, lo-fi analog charm" },
+                    { id: "redscale", name: "Redscale Film", prompt: "redscale film photography, intense red-orange cast, surreal, chemical color shifts" },
+                    { id: "expired_film", name: "Expired Film", prompt: "expired 35mm film aesthetic, color shifts, increased grain, muddy shadows, light leaks" },
+                    { id: "film_soup", name: "Film Soup", prompt: "film soup photography, damaged film, warped colors, chemical stains, extreme grain" }
+                ]
+            },
+            instant: {
+                name: "📸 Instan",
+                styles: [
+                    { id: "polaroid_sx70", name: "Polaroid SX-70", prompt: "shot on Polaroid SX-70, instant film, rich colors, high contrast, glossy, white frame" },
+                    { id: "faded_polaroid", name: "Polaroid Pudar", prompt: "faded polaroid aesthetic, soft blur, retro color shift, warm tones, vignette" },
+                    { id: "fuji_instax", name: "Fujifilm Instax", prompt: "shot on Fujifilm Instax Mini, overexposed, pastel wash, bright flash, cute retro" },
+                    { id: "expired_polaroid", name: "Polaroid Kadaluarsa", prompt: "expired Polaroid film, yellow/brown shifts, uneven chemicals, low contrast, dreamy fog" }
+                ]
+            },
+            digicam: {
+                name: "💾 Digicam Y2K",
+                styles: [
+                    { id: "y2k_digicam", name: "Sony Cyber-shot", prompt: "early 2000s digital camera, CCD bloom, low megapixel, blown highlights, chromatic aberration, Y2K flash" },
+                    { id: "webcam_2000s", name: "Webcam 2000s", prompt: "2000s PC webcam, 480p, heavy pixelation, low frame rate, digital noise, early internet vibe" }
+                ]
+            },
+            phone: {
+                name: "📱 HP Jadul",
+                styles: [
+                    { id: "nokia_vga", name: "Nokia VGA", prompt: "2005 flip phone camera, VGA resolution, heavy jpeg compression, pixelated, low quality, 144p" },
+                    { id: "early_iphone", name: "iPhone Awal", prompt: "shot on early iPhone 3G, 2MP, washed colors, digital grain, 2010s retro" }
+                ]
+            },
+            blackwhite: {
+                name: "🎞️ B/W Klasik",
+                styles: [
+                    { id: "leica_ilford", name: "Ilford HP5", prompt: "shot on Leica M3, Ilford HP5, high contrast, heavy silver grain, dramatic monochrome" },
+                    { id: "kodak_tmax", name: "Kodak T-Max 400", prompt: "Kodak T-Max 400, fine grain, sharp details, wide tonal range" },
+                    { id: "wet_plate", name: "Wet Plate 1850s", prompt: "wet plate collodion, tintype, antique sepia, scratches, dust, haunting" },
+                    { id: "cyanotype", name: "Cyanotype", prompt: "cyanotype process, Prussian blue monochrome, brushed paper texture, scientific aesthetic" }
+                ]
+            },
+            cctv_video: {
+                name: "📹 CCTV/VHS",
+                styles: [
+                    { id: "vhs_camcorder", name: "VHS Camcorder", prompt: "1990s VHS still, tracking lines, RGB bleeding, scanlines, timestamp overlay" },
+                    { id: "cctv_camera", name: "CCTV Security", prompt: "CCTV footage, low res, fish eye, grainy night vision, timestamp, surveillance" }
+                ]
+            },
+            toy_camera: {
+                name: "🧸 Kamera Mainan",
+                styles: [
+                    { id: "holga_120", name: "Holga 120", prompt: "Holga 120, medium format, heavy vignette, soft focus, light leaks, plastic lens" },
+                    { id: "diana_f", name: "Diana F+", prompt: "Diana F+, dreamy soft focus, surreal leaks, strong vignette, retro snapshot" },
+                    { id: "pinhole", name: "Pinhole", prompt: "pinhole photography, extreme wide, infinite DOF, soft, long exposure blur" }
+                ]
+            },
+            lens_effect: {
+                name: "🔮 Efek Lensa",
+                styles: [
+                    { id: "helios_44_2", name: "Helios 44-2", prompt: "Helios 44-2 vintage lens, swirly bokeh, creamy background, Soviet character" },
+                    { id: "petzval", name: "Petzval Lens", prompt: "Petzval portrait lens, sharp center, dramatic fall-off, swirling bokeh, 19th century" }
+                ]
+            }
+        };
+
+        const lightingDatabase = [
+            { id: "default", name: "Default", prompt: "" },
+            { id: "harsh_flash", name: "Harsh Flash", prompt: "harsh direct flash, overexposed subject, black background, stark contrast" },
+            { id: "natural", name: "Natural Light", prompt: "natural sunlight, soft ambient lighting" },
+            { id: "golden_hour", name: "Golden Hour", prompt: "golden hour lighting, warm rays, long shadows" },
+            { id: "night_neon", name: "Night Neon", prompt: "night time, neon signs, moody lighting, cinematic flares" },
+            { id: "studio_portrait", name: "Studio Portrait", prompt: "studio lighting, softbox, perfectly exposed" }
+        ];
+
+        // Helper lens hint
+        function getLensHint(styleId) {
+            if (styleId.includes('disposable')) return 'Plastic fixed 30mm f/10';
+            if (styleId.includes('portra')||styleId.includes('cinestill')) return 'Prime 50mm f/1.4';
+            if (styleId.includes('polaroid')) return 'Polaroid 116mm f/8';
+            if (styleId.includes('vga')) return 'Fixed focus VGA';
+            if (styleId.includes('helios')) return 'Helios 58mm f/2';
+            if (styleId.includes('holga')) return 'Holga plastic 60mm f/8';
+            return 'Vintage lens';
+        }
+
+        // Init UI
+        window.onload = function() {
+            const catSelect = document.getElementById('category');
+            const lightSelect = document.getElementById('lighting');
+            for (let key in cameraDatabase) {
+                let opt = document.createElement('option');
+                opt.value = key;
+                opt.text = cameraDatabase[key].name;
+                catSelect.appendChild(opt);
+            }
+            lightingDatabase.forEach(l => {
+                let opt = document.createElement('option');
+                opt.value = l.id;
+                opt.text = l.name;
+                lightSelect.appendChild(opt);
+            });
+            updateStyles();
+            toggleAr();
+        };
+
+        function updateStyles() {
+            const cat = document.getElementById('category').value;
+            const styleSelect = document.getElementById('style');
+            styleSelect.innerHTML = '';
+            cameraDatabase[cat].styles.forEach(s => {
+                let opt = document.createElement('option');
+                opt.value = s.id;
+                opt.text = s.name;
+                styleSelect.appendChild(opt);
+            });
+        }
+
+        function toggleAr() {
+            const ar = document.getElementById('arContainer');
+            const checked = document.getElementById('mjMode').checked;
+            if (checked) ar.classList.remove('hidden-ar'); else ar.classList.add('hidden-ar');
+        }
+
+        function generatePrompt() {
+            const subject = document.getElementById('subject').value.trim();
+            if (!subject) { showToast('Deskripsi subjek wajib diisi!', 'error'); return; }
+            
+            const entityType = document.getElementById('entityType').value;
+            const expression = document.getElementById('expression').value;
+            const catId = document.getElementById('category').value;
+            const styleId = document.getElementById('style').value;
+            const lightId = document.getElementById('lighting').value;
+            const mjMode = document.getElementById('mjMode').checked;
+            const ar = document.getElementById('aspectRatio').value;
+            
+            const catObj = cameraDatabase[catId];
+            const styleObj = catObj.styles.find(s=>s.id===styleId);
+            const lightObj = lightingDatabase.find(l=>l.id===lightId);
+            
+            let structured = `[INSTRUKSI SISTEM]\n> MODE KONSISTENSI ESTETIKA: Terapkan efek kamera/film retro yang dipilih. Pertahankan ketidaksempurnaan analog.\n\n`;
+            structured += `[DETAIL SUBJEK]\n- Tipe: ${entityType}\n- Deskripsi: ${subject}\n- Ekspresi/Mood: ${expression}\n- Batasan: TEPAT SATU subjek utama, tanpa tambahan.\n\n`;
+            structured += `[GAYA KAMERA]\n- Kategori: ${catObj.name}\n- Gaya: ${styleObj.name}\n- Keywords: ${styleObj.prompt}\n- Pencahayaan: ${lightObj.prompt || 'Default'}\n\n`;
+            structured += `[FOTOGRAFI]\n- Lensa: ${getLensHint(styleId)}\n- Rasio: ${mjMode ? ar.replace('--ar ','') : 'Default'}\n- Komposisi: Vintage autentik (grain, leaks, tilt)\n\n`;
+            structured += `[PROMPT FINAL]\n`;
+            
+            let finalParts = [subject, styleObj.prompt];
+            if (lightObj.prompt) finalParts.push(lightObj.prompt);
+            if (catId === 'phone'||catId==='cctv_video'||catId==='digicam') finalParts.push('raw unedited, low quality, authentic');
+            else finalParts.push('photorealistic, ultra detailed, analog masterpiece');
+            let final = finalParts.join(', ').replace(/,\s*,/g,',');
+            if(mjMode) final += ` ${ar} --v 6.0`;
+            structured += final;
+            
+            const resultBox = document.getElementById('result');
+            resultBox.value = structured;
+            resultBox.classList.add('fade-in');
+            setTimeout(()=>resultBox.classList.remove('fade-in'),500);
+            showToast('Prompt terstruktur siap!', 'success');
+        }
+
+        function copyPrompt() {
+            const txt = document.getElementById('result').value;
+            if(!txt) { showToast('Prompt kosong', 'error'); return; }
+            navigator.clipboard.writeText(txt).then(()=>showToast('Tersalin!', 'success'))
+            .catch(()=>{ /*fallback*/ const ta=document.getElementById('result'); ta.select(); document.execCommand('copy'); showToast('Copied (fallback)'); });
+        }
+
+        function showToast(msg, type='info') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msgEl = document.getElementById('toast-message');
+            msgEl.innerText = msg;
+            toast.classList.remove('translate-y-10','opacity-0','bg-red-900','bg-green-900','bg-amber-900');
+            if(type==='success') { toast.classList.add('bg-green-900/80'); icon.className='fas fa-check-circle mr-3 text-green-300'; }
+            else if(type==='error') { toast.classList.add('bg-red-900/80'); icon.className='fas fa-exclamation-circle mr-3 text-red-300'; }
+            else { toast.classList.add('bg-amber-900/80'); icon.className='fas fa-info-circle mr-3 text-amber-300'; }
+            setTimeout(()=>toast.classList.add('translate-y-10','opacity-0'),3000);
+        }
+    </script>
+    <style>
+        .hidden-ar { display: none !important; opacity: 0; }
+        #arContainer { transition: opacity 0.3s; }
+    </style>
+</body>
+</html>
