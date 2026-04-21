@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Custom dark theme & animations */
         body {
             background: #0f0e0e;
             background-image: radial-gradient(circle at 20% 30%, #1e1b1a 0%, #0a0909 100%);
@@ -19,9 +18,6 @@
             border: 1px solid rgba(180, 130, 80, 0.2);
             box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
         }
-        .vintage-glow {
-            box-shadow: 0 0 20px rgba(210, 150, 80, 0.15);
-        }
         .input-dark {
             background: #1c1816;
             border: 1px solid #3a2e28;
@@ -30,6 +26,7 @@
         .input-dark:focus {
             border-color: #b8845c;
             box-shadow: 0 0 0 2px rgba(184, 132, 92, 0.3);
+            outline: none;
         }
         .btn-generate {
             background: linear-gradient(145deg, #6f4e3a, #4f3628);
@@ -52,29 +49,33 @@
             100% { box-shadow: 0 0 0 0 rgba(184, 132, 92, 0); }
         }
         .fade-in {
-            animation: fadeIn 0.5s ease;
+            animation: fadeIn 0.4s ease;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .hover-lift {
-            transition: transform 0.2s ease, box-shadow 0.2s;
-        }
         .hover-lift:hover {
             transform: translateY(-3px);
             box-shadow: 0 15px 25px -8px #00000080;
         }
-        /* Custom scrollbar for dark */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #1a1513; }
         ::-webkit-scrollbar-thumb { background: #6b4f3e; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #9b745a; }
+        /* Disabled state untuk deskripsi */
+        textarea:disabled, textarea[readonly] {
+            background: #141110;
+            border-color: #2a221e;
+            color: #9a8a80;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col items-center py-8 px-4">
 
-    <!-- Header dengan animasi -->
+    <!-- Header -->
     <header class="max-w-5xl w-full mb-8 text-center">
         <div class="inline-block glass-panel rounded-3xl px-8 py-5 backdrop-blur-md">
             <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-amber-100/90 flex items-center justify-center gap-3">
@@ -86,25 +87,35 @@
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- Main -->
     <main class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- Kolom Input (Kiri) -->
+        <!-- Kolom Input -->
         <div class="lg:col-span-7 glass-panel rounded-2xl p-6 md:p-7 backdrop-blur-lg hover-lift transition-all">
             <h2 class="text-xl font-semibold mb-5 pb-3 border-b border-amber-700/30 flex items-center text-amber-200">
-                <i class="fas fa-sliders-h w-6 text-amber-500"></i> Konfigurasi Foto
+                <i class="fas fa-sliders-h w-6 text-amber-500"></i> Konfigurasi
             </h2>
 
             <div class="space-y-5">
+                <!-- TOGGLE: Gunakan Gambar Unggahan -->
+                <div class="flex items-center p-3 bg-black/20 rounded-xl border border-amber-800/30">
+                    <input type="checkbox" id="useImageOnly" class="w-5 h-5 accent-amber-600 bg-black/40 border-amber-700 rounded focus:ring-amber-500 cursor-pointer" onchange="toggleDescriptionField()">
+                    <label for="useImageOnly" class="ml-3 text-sm font-medium text-amber-200/90 cursor-pointer">
+                        <i class="fas fa-image mr-1 text-amber-400"></i> Gunakan Gambar Unggahan (Nano Banana / Flow)
+                    </label>
+                    <span class="ml-auto text-amber-400/70 text-xs"><i class="far fa-question-circle" title="Deskripsi subjek tidak diperlukan. Prompt hanya berisi efek kamera."></i></span>
+                </div>
+
                 <!-- Deskripsi Subjek -->
                 <div>
                     <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
-                        <i class="fas fa-pen mr-1 text-amber-600"></i> Deskripsi Subjek <span class="text-amber-400">*</span>
+                        <i class="fas fa-pen mr-1 text-amber-600"></i> Deskripsi Subjek <span id="subjectRequired" class="text-amber-400">*</span>
                     </label>
                     <textarea id="subject" rows="3" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all resize-none text-amber-100 placeholder:text-stone-500" placeholder="Contoh: A young woman sitting in a retro diner, drinking coffee... (Gunakan Bahasa Inggris)"></textarea>
+                    <p class="text-xs text-amber-500/60 mt-1" id="descHint">Wajib diisi jika tidak menggunakan gambar unggahan.</p>
                 </div>
 
-                <!-- Tipe Subjek (Pengganti Gender) & Ekspresi -->
+                <!-- Tipe Subjek & Ekspresi -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
@@ -134,14 +145,14 @@
                     </div>
                 </div>
 
-                <!-- Kategori & Style Kamera -->
+                <!-- Kategori & Gaya -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
                             <i class="fas fa-camera mr-1 text-amber-600"></i> Kategori
                         </label>
                         <select id="category" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all" onchange="updateStyles()">
-                            <!-- JS populate -->
+                            <!-- Populated by JS -->
                         </select>
                     </div>
                     <div>
@@ -149,7 +160,7 @@
                             <i class="fas fa-film mr-1 text-amber-600"></i> Gaya Spesifik
                         </label>
                         <select id="style" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all">
-                            <!-- JS populate -->
+                            <!-- Populated by JS -->
                         </select>
                     </div>
                 </div>
@@ -160,11 +171,11 @@
                         <i class="fas fa-sun mr-1 text-amber-600"></i> Pencahayaan
                     </label>
                     <select id="lighting" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all">
-                        <!-- JS populate -->
+                        <!-- Populated by JS -->
                     </select>
                 </div>
 
-                <!-- Opsi Midjourney & AR -->
+                <!-- Midjourney & AR -->
                 <div class="mt-3 p-4 rounded-xl bg-black/20 border border-amber-800/20">
                     <div class="flex items-center mb-3">
                         <input type="checkbox" id="mjMode" class="w-5 h-5 accent-amber-600 bg-black/40 border-amber-700 rounded focus:ring-amber-500 cursor-pointer" checked onchange="toggleAr()">
@@ -183,23 +194,21 @@
                     </div>
                 </div>
 
-                <!-- Tombol Generate dengan animasi -->
+                <!-- Generate Button -->
                 <button onclick="generatePrompt()" class="w-full btn-generate font-semibold py-3.5 px-4 rounded-xl shadow-lg flex justify-center items-center gap-2 mt-2 pulse-animation">
                     <i class="fas fa-magic text-amber-300"></i> Hasilkan Prompt
                 </button>
             </div>
         </div>
 
-        <!-- Kolom Hasil (Kanan) -->
+        <!-- Kolom Hasil -->
         <div class="lg:col-span-5 flex flex-col">
             <div class="glass-panel rounded-2xl p-6 md:p-7 backdrop-blur-lg flex-1 flex flex-col">
                 <h2 class="text-xl font-semibold mb-4 pb-3 border-b border-amber-700/30 flex items-center text-amber-200">
                     <i class="fas fa-terminal w-6 text-amber-500"></i> Hasil Prompt
                 </h2>
                 <p class="text-xs text-amber-300/60 mb-3 flex items-center gap-1"><i class="fas fa-copy"></i> Copy & paste ke AI generator</p>
-                
-                <textarea id="result" rows="15" class="w-full px-4 py-3 input-dark rounded-xl border-2 border-dashed border-amber-800/40 focus:outline-none flex-grow font-mono text-sm leading-relaxed resize-none transition-all" readonly placeholder="Prompt terstruktur akan muncul di sini..."></textarea>
-                
+                <textarea id="result" rows="15" class="w-full px-4 py-3 input-dark rounded-xl border-2 border-dashed border-amber-800/40 focus:outline-none flex-grow font-mono text-sm leading-relaxed resize-none transition-all" readonly placeholder="Prompt terstruktur akan muncul..."></textarea>
                 <button onclick="copyPrompt()" class="mt-4 w-full bg-amber-800/40 hover:bg-amber-700/50 text-amber-100 font-medium py-3 px-4 rounded-xl border border-amber-700/30 transition-all flex justify-center items-center gap-2 backdrop-blur-sm">
                     <i class="far fa-copy"></i> Salin ke Clipboard
                 </button>
@@ -207,29 +216,29 @@
         </div>
     </main>
 
-    <!-- Tips Section -->
+    <!-- Tips -->
     <div class="max-w-5xl w-full mt-6">
         <div class="glass-panel rounded-2xl p-5 border-l-4 border-amber-600 text-sm text-amber-200/90 flex items-start gap-3">
             <i class="fas fa-flask text-amber-400 text-xl mt-0.5"></i>
             <div>
                 <h3 class="font-bold mb-1 text-amber-300">💡 Tips Darkroom</h3>
                 <ul class="list-disc list-inside space-y-1 text-amber-200/70">
-                    <li>Gunakan deskripsi <span class="text-amber-300">bahasa Inggris</span> untuk hasil maksimal di Midjourney / DALL·E.</li>
-                    <li>Kategori "Phone Jadul" akan otomatis menambahkan <i>low quality, pixelated</i> agar tidak HD.</li>
-                    <li>Efek <i>date stamp</i> sering muncul otomatis di gaya Disposable / VHS.</li>
+                    <li>Aktifkan <span class="text-amber-300">"Gunakan Gambar Unggahan"</span> jika ingin memberi efek retro pada foto yang sudah ada (Nano Banana).</li>
+                    <li>Gaya <i>Phone Jadul</i> otomatis menambahkan <i>low quality, pixelated</i>.</li>
+                    <li>Efek <i>date stamp</i> sering muncul di gaya Disposable / VHS.</li>
                 </ul>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
+    <!-- Toast -->
     <div id="toast" class="fixed bottom-6 right-6 bg-amber-900/90 backdrop-blur-sm text-amber-100 px-5 py-3 rounded-lg shadow-2xl transition-all duration-300 transform translate-y-10 opacity-0 flex items-center z-50 border border-amber-700/40">
         <i id="toast-icon" class="fas fa-check-circle mr-3 text-amber-300"></i>
         <span id="toast-message" class="font-medium">Pesan</span>
     </div>
 
     <script>
-        // ========== DATABASE KAMERA (sama seperti sebelumnya, hanya tampilan yang dark) ==========
+        // ========== DATABASE KAMERA ==========
         const cameraDatabase = {
             analog: {
                 name: "🎞️ Analog 35mm",
@@ -315,7 +324,6 @@
             { id: "studio_portrait", name: "Studio Portrait", prompt: "studio lighting, softbox, perfectly exposed" }
         ];
 
-        // Helper lens hint
         function getLensHint(styleId) {
             if (styleId.includes('disposable')) return 'Plastic fixed 30mm f/10';
             if (styleId.includes('portra')||styleId.includes('cinestill')) return 'Prime 50mm f/1.4';
@@ -326,7 +334,27 @@
             return 'Vintage lens';
         }
 
-        // Init UI
+        // Toggle deskripsi enable/disable
+        function toggleDescriptionField() {
+            const useImage = document.getElementById('useImageOnly').checked;
+            const subjectArea = document.getElementById('subject');
+            const requiredSpan = document.getElementById('subjectRequired');
+            const descHint = document.getElementById('descHint');
+            
+            subjectArea.readOnly = useImage;
+            if (useImage) {
+                subjectArea.value = ''; // opsional, bisa juga dibiarkan isinya
+                subjectArea.placeholder = 'Deskripsi dinonaktifkan (menggunakan gambar unggahan)';
+                requiredSpan.style.display = 'none';
+                descHint.innerHTML = '<i class="fas fa-image mr-1"></i> Mode gambar aktif. Deskripsi tidak diperlukan.';
+            } else {
+                subjectArea.placeholder = 'Contoh: A young woman sitting in a retro diner, drinking coffee...';
+                requiredSpan.style.display = 'inline';
+                descHint.innerHTML = 'Wajib diisi jika tidak menggunakan gambar unggahan.';
+            }
+        }
+
+        // Inisialisasi
         window.onload = function() {
             const catSelect = document.getElementById('category');
             const lightSelect = document.getElementById('lighting');
@@ -344,6 +372,7 @@
             });
             updateStyles();
             toggleAr();
+            toggleDescriptionField(); // set state awal
         };
 
         function updateStyles() {
@@ -361,13 +390,20 @@
         function toggleAr() {
             const ar = document.getElementById('arContainer');
             const checked = document.getElementById('mjMode').checked;
-            if (checked) ar.classList.remove('hidden-ar'); else ar.classList.add('hidden-ar');
+            ar.classList.toggle('hidden-ar', !checked);
         }
 
         function generatePrompt() {
+            const useImage = document.getElementById('useImageOnly').checked;
             const subject = document.getElementById('subject').value.trim();
-            if (!subject) { showToast('Deskripsi subjek wajib diisi!', 'error'); return; }
             
+            // Validasi
+            if (!useImage && !subject) {
+                showToast('Deskripsi subjek wajib diisi atau aktifkan mode gambar!', 'error');
+                document.getElementById('subject').focus();
+                return;
+            }
+
             const entityType = document.getElementById('entityType').value;
             const expression = document.getElementById('expression').value;
             const catId = document.getElementById('category').value;
@@ -381,15 +417,26 @@
             const lightObj = lightingDatabase.find(l=>l.id===lightId);
             
             let structured = `[INSTRUKSI SISTEM]\n> MODE KONSISTENSI ESTETIKA: Terapkan efek kamera/film retro yang dipilih. Pertahankan ketidaksempurnaan analog.\n\n`;
-            structured += `[DETAIL SUBJEK]\n- Tipe: ${entityType}\n- Deskripsi: ${subject}\n- Ekspresi/Mood: ${expression}\n- Batasan: TEPAT SATU subjek utama, tanpa tambahan.\n\n`;
+            
+            // Bagian Subjek hanya jika tidak pakai gambar
+            if (!useImage) {
+                structured += `[DETAIL SUBJEK]\n- Tipe: ${entityType}\n- Deskripsi: ${subject}\n- Ekspresi/Mood: ${expression}\n- Batasan: TEPAT SATU subjek utama.\n\n`;
+            } else {
+                structured += `[MODE GAMBAR]\n- Menggunakan gambar unggahan (Nano Banana). Tidak ada deskripsi teks subjek.\n\n`;
+            }
+            
             structured += `[GAYA KAMERA]\n- Kategori: ${catObj.name}\n- Gaya: ${styleObj.name}\n- Keywords: ${styleObj.prompt}\n- Pencahayaan: ${lightObj.prompt || 'Default'}\n\n`;
             structured += `[FOTOGRAFI]\n- Lensa: ${getLensHint(styleId)}\n- Rasio: ${mjMode ? ar.replace('--ar ','') : 'Default'}\n- Komposisi: Vintage autentik (grain, leaks, tilt)\n\n`;
             structured += `[PROMPT FINAL]\n`;
             
-            let finalParts = [subject, styleObj.prompt];
+            let finalParts = [];
+            if (!useImage) finalParts.push(subject);
+            finalParts.push(styleObj.prompt);
             if (lightObj.prompt) finalParts.push(lightObj.prompt);
+            
             if (catId === 'phone'||catId==='cctv_video'||catId==='digicam') finalParts.push('raw unedited, low quality, authentic');
             else finalParts.push('photorealistic, ultra detailed, analog masterpiece');
+            
             let final = finalParts.join(', ').replace(/,\s*,/g,',');
             if(mjMode) final += ` ${ar} --v 6.0`;
             structured += final;
@@ -405,7 +452,12 @@
             const txt = document.getElementById('result').value;
             if(!txt) { showToast('Prompt kosong', 'error'); return; }
             navigator.clipboard.writeText(txt).then(()=>showToast('Tersalin!', 'success'))
-            .catch(()=>{ /*fallback*/ const ta=document.getElementById('result'); ta.select(); document.execCommand('copy'); showToast('Copied (fallback)'); });
+            .catch(()=>{ 
+                const ta=document.getElementById('result'); 
+                ta.select(); 
+                document.execCommand('copy'); 
+                showToast('Copied (fallback)'); 
+            });
         }
 
         function showToast(msg, type='info') {
@@ -417,6 +469,7 @@
             if(type==='success') { toast.classList.add('bg-green-900/80'); icon.className='fas fa-check-circle mr-3 text-green-300'; }
             else if(type==='error') { toast.classList.add('bg-red-900/80'); icon.className='fas fa-exclamation-circle mr-3 text-red-300'; }
             else { toast.classList.add('bg-amber-900/80'); icon.className='fas fa-info-circle mr-3 text-amber-300'; }
+            toast.classList.remove('translate-y-10','opacity-0');
             setTimeout(()=>toast.classList.add('translate-y-10','opacity-0'),3000);
         }
     </script>
