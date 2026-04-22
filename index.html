@@ -124,28 +124,35 @@
         }
 
         .brass-button {
-    /* Hapus gradient bawaan, ganti pakai gambar */
-    background-image: url('./assets/tombol-utama.png');
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: transparent; /* Hilangkan warna dasar */
-    border: none; /* Hilangkan garis pinggir */
-    box-shadow: none; /* Hilangkan bayangan CSS karena gambar sudah ada bayangannya */
-    
-    /* Sisanya biarkan (font, ukuran, dll) */
-    width: 8rem; /* Setara w-32 */
-    height: 8rem;
-    display: flex;
-    /* ... */
-}
+            /* Hapus gradient bawaan, ganti pakai gambar */
+            background-image: url('./assets/tombol-utama.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: transparent; /* Hilangkan warna dasar */
+            border: none; /* Hilangkan garis pinggir */
+            box-shadow: none; /* Hilangkan bayangan CSS karena gambar sudah ada bayangannya */
+            
+            /* --- MENGATUR WARNA & POSISI TEKS --- */
+            color: #e5d3b3; /* Ganti warna teks di sini (contoh: krem/putih tulang) */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.9); /* Bayangan gelap agar teks terbaca kontras di atas logam */
+            
+            width: 8rem; /* Setara w-32 */
+            height: 8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Meratakan teks ke tengah secara horizontal */
+            justify-content: center; /* Meratakan teks ke tengah secara vertikal */
+            padding-bottom: 0.5rem; /* Sesuaikan angka ini (tambah/kurang) untuk menggeser teks sedikit ke atas/bawah agar pas dengan pola tombol */
+            /* ... */
+        }
 
-/* Efek saat diklik */
-.brass-button:active {
-    background-image: url('./assets/tombol-tekan.png');
-    /* Atau jika tidak punya gambar kedua, cukup pakai transform: */
-    transform: translateY(4px) scale(0.95);
-}
+        /* Efek saat diklik */
+        .brass-button:active {
+            background-image: url('./assets/tombol-tekan.png');
+            /* Atau jika tidak punya gambar kedua, cukup pakai transform: */
+            transform: translateY(4px) scale(0.95);
+        }
         .polaroid-frame {
             background-color: #f9f8f4;
             padding: 16px 16px 60px 16px;
