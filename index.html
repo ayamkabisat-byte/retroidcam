@@ -6,239 +6,386 @@
     <title>RetroCam · Darkroom Prompt Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=VT323&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            /* Ganti URL di bawah dengan gambar tekstur Anda nanti jika ada */
+            --bg-wood: url(''); 
+            --bg-leather: url(''); 
+            --bg-paper: url(''); 
+            
+            --brass-1: #d4af37;
+            --brass-2: #aa7c11;
+            --brass-3: #5c430a;
+            --leather-dark: #1f1a17;
+            --leather-light: #2c2420;
+        }
+
         body {
-            background: #0f0e0e;
-            background-image: radial-gradient(circle at 20% 30%, #1e1b1a 0%, #0a0909 100%);
+            background-color: #2b1d14;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.8) 100%),
+                repeating-linear-gradient(45deg, #382518 0px, #382518 2px, #2b1d14 2px, #2b1d14 4px);
+            background-size: 100% 100%, 100px 100px;
+            background-attachment: fixed;
+            font-family: 'Courier Prime', monospace;
+            color: #e5d3b3;
         }
-        .glass-panel {
-            background: rgba(20, 18, 18, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(180, 130, 80, 0.2);
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
+
+        .machine-panel {
+            background-color: var(--leather-dark);
+            background-image: var(--bg-leather), linear-gradient(135deg, var(--leather-light) 0%, var(--leather-dark) 100%);
+            border: 4px solid #110d0a;
+            border-radius: 16px;
+            box-shadow: 
+                inset 0 0 20px rgba(0,0,0,0.8),
+                inset 0 2px 2px rgba(255,255,255,0.1),
+                10px 15px 25px rgba(0,0,0,0.7);
+            position: relative;
         }
-        .input-dark {
-            background: #1c1816;
-            border: 1px solid #3a2e28;
-            color: #f0e6dc;
+
+        .rivet {
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, var(--brass-1) 0%, var(--brass-2) 60%, var(--brass-3) 100%);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.8), inset -1px -1px 2px rgba(0,0,0,0.5), inset 1px 1px 2px rgba(255,255,255,0.4);
         }
-        .input-dark:focus {
-            border-color: #b8845c;
-            box-shadow: 0 0 0 2px rgba(184, 132, 92, 0.3);
+        .rivet-tl { top: 12px; left: 12px; }
+        .rivet-tr { top: 12px; right: 12px; }
+        .rivet-bl { bottom: 12px; left: 12px; }
+        .rivet-br { bottom: 12px; right: 12px; }
+
+        .brass-plate {
+            background: linear-gradient(to bottom, #e6c27a 0%, #c59b43 50%, #a67c27 51%, #d4af37 100%);
+            border: 2px solid #5c430a;
+            border-radius: 6px;
+            color: #3e2a05;
+            font-family: 'Special Elite', cursive;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.3);
+            box-shadow: 2px 3px 5px rgba(0,0,0,0.6), inset 1px 1px 1px rgba(255,255,255,0.6);
+            padding: 6px 16px;
+            display: inline-block;
+        }
+
+        .mechanical-input {
+            background-color: #0a0807;
+            border: 2px solid #3a2a1f;
+            border-top-color: #1a130e;
+            border-left-color: #1a130e;
+            border-radius: 8px;
+            color: #ffb000;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            box-shadow: inset 2px 2px 8px rgba(0,0,0,0.9);
+            transition: all 0.2s;
+        }
+        .mechanical-input:focus {
             outline: none;
+            border-color: var(--brass-2);
+            box-shadow: inset 2px 2px 8px rgba(0,0,0,0.9), 0 0 5px rgba(212, 175, 55, 0.4);
         }
-        .btn-generate {
-            background: linear-gradient(145deg, #6f4e3a, #4f3628);
-            border: 1px solid #9f7a5c;
-            color: #f5ebe0;
-            transition: all 0.25s ease;
+
+        .clipboard-paper {
+            background-color: #f4e8d1;
+            background-image: var(--bg-paper);
+            color: #2b1d14;
+            font-family: 'Special Elite', cursive;
+            border-radius: 2px;
+            box-shadow: 
+                2px 4px 10px rgba(0,0,0,0.5),
+                inset 0 0 30px rgba(200, 160, 120, 0.3);
+            position: relative;
         }
-        .btn-generate:hover {
-            background: linear-gradient(145deg, #8b644b, #634b3a);
-            border-color: #c99e7b;
-            transform: scale(1.01);
-            box-shadow: 0 8px 18px rgba(0,0,0,0.4), 0 0 12px rgba(200,140,70,0.3);
+        .clipboard-paper textarea {
+            background: transparent;
+            color: #2b1d14;
+            font-family: 'Special Elite', cursive;
+            line-height: 1.6;
         }
-        .pulse-animation {
-            animation: pulse-glow 2s infinite;
+        .clipboard-paper textarea::placeholder {
+            color: #a89478;
         }
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0 0 rgba(184, 132, 92, 0.3); }
-            70% { box-shadow: 0 0 0 8px rgba(184, 132, 92, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(184, 132, 92, 0); }
+        .clipboard-clip {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 25px;
+            background: linear-gradient(to bottom, #d1d5db 0%, #9ca3af 50%, #6b7280 100%);
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.6);
+            border: 1px solid #4b5563;
         }
-        .fade-in {
-            animation: fadeIn 0.4s ease;
+
+        .brass-button {
+            background: radial-gradient(circle at 50% 20%, #f9d976 0%, #e6b940 30%, #b3851b 80%, #6e5008 100%);
+            border: 4px solid #3e2a05;
+            border-radius: 50%;
+            color: #2b1d14;
+            font-family: 'Special Elite', cursive;
+            font-weight: bold;
+            box-shadow: 
+                0 10px 15px rgba(0,0,0,0.7),
+                inset 0 5px 10px rgba(255,255,255,0.4),
+                inset 0 -5px 10px rgba(0,0,0,0.5);
+            transition: all 0.1s;
+            position: relative;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+        .brass-button:active {
+            transform: translateY(4px) scale(0.98);
+            box-shadow: 
+                0 2px 5px rgba(0,0,0,0.8),
+                inset 0 2px 10px rgba(255,255,255,0.2),
+                inset 0 -2px 10px rgba(0,0,0,0.6);
         }
-        .hover-lift:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 25px -8px #00000080;
+
+        .polaroid-frame {
+            background-color: #f9f8f4;
+            padding: 16px 16px 60px 16px;
+            box-shadow: 
+                5px 10px 20px rgba(0,0,0,0.6),
+                inset 0 0 10px rgba(0,0,0,0.05);
+            transform: rotate(2deg);
+            transition: transform 0.3s;
         }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #1a1513; }
-        ::-webkit-scrollbar-thumb { background: #6b4f3e; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #9b745a; }
-        /* Disabled state untuk deskripsi */
-        textarea:disabled, textarea[readonly] {
-            background: #141110;
-            border-color: #2a221e;
-            color: #9a8a80;
-            cursor: not-allowed;
-            opacity: 0.7;
+        .polaroid-frame:hover {
+            transform: rotate(0deg) scale(1.02);
         }
+        .polaroid-screen {
+            background-color: #0d0b0a;
+            border: 2px solid #222;
+            box-shadow: inset 0 0 20px rgba(0,0,0,1);
+            position: relative;
+            overflow: hidden;
+        }
+        .polaroid-screen::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .crt-text {
+            font-family: 'VT323', monospace;
+            color: #ffb000;
+            font-size: 1rem;
+            text-shadow: 0 0 5px rgba(255, 176, 0, 0.5);
+            line-height: 1.2;
+        }
+
+        .handwriting {
+            font-family: 'Special Elite', cursive;
+            color: #1a1a1a;
+            position: absolute;
+            bottom: 15px;
+            left: 20px;
+            font-size: 1rem;
+            opacity: 0.8;
+            transform: rotate(-1deg);
+        }
+
+        .retro-toggle input:checked + div {
+            background-color: var(--brass-2);
+        }
+        .retro-toggle input:checked + div > div {
+            transform: translateX(100%);
+            background: linear-gradient(to bottom, #fff, #d1d5db);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0807; }
+        ::-webkit-scrollbar-thumb { background: #5c430a; border-radius: 4px; }
+        
+        textarea:disabled { opacity: 0.5; }
     </style>
 </head>
-<body class="font-sans antialiased min-h-screen flex flex-col items-center py-8 px-4">
+<body class="min-h-screen flex flex-col items-center py-6 px-4">
 
     <!-- Header -->
-    <header class="max-w-5xl w-full mb-8 text-center">
-        <div class="inline-block glass-panel rounded-3xl px-8 py-5 backdrop-blur-md">
-            <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-amber-100/90 flex items-center justify-center gap-3">
-                <i class="fas fa-film text-amber-400/80 text-3xl"></i> 
-                <span class="bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">RetroCam Darkroom</span>
-                <i class="fas fa-camera-retro text-amber-400/80 text-3xl"></i>
-            </h1>
-            <p class="text-amber-200/60 text-sm md:text-base mt-1 font-light tracking-wide">Simulasi film jadul · kamera analog · estetika vintage</p>
+    <header class="max-w-6xl w-full mb-8 flex justify-between items-end border-b-2 border-[#5c430a] pb-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-[#d4af37] rounded-sm flex items-center justify-center shadow-lg border border-[#3e2a05]">
+                <i class="fas fa-camera-retro text-[#2b1d14] text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-widest text-[#d4af37]" style="font-family: 'Special Elite', cursive;">RETROCAM DARKROOM</h1>
+        </div>
+        <div class="hidden md:flex gap-6 text-sm text-[#a89478] uppercase tracking-wider font-bold">
+            <a href="#" class="hover:text-[#d4af37] transition-colors text-[#d4af37]">UI/UX Web Dashboard</a>
+            <a href="#" class="hover:text-[#d4af37] transition-colors">Prompt</a>
+            <a href="#" class="hover:text-[#d4af37] transition-colors">About</a>
         </div>
     </header>
 
-    <!-- Main -->
-    <main class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Main Workspace -->
+    <main class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         
-        <!-- Kolom Input -->
-        <div class="lg:col-span-7 glass-panel rounded-2xl p-6 md:p-7 backdrop-blur-lg hover-lift transition-all">
-            <h2 class="text-xl font-semibold mb-5 pb-3 border-b border-amber-700/30 flex items-center text-amber-200">
-                <i class="fas fa-sliders-h w-6 text-amber-500"></i> Konfigurasi
-            </h2>
+        <!-- PANEL KIRI (Mesin Konfigurasi) -->
+        <div class="lg:col-span-6 machine-panel p-6 md:p-8">
+            <div class="rivet rivet-tl"></div><div class="rivet rivet-tr"></div>
+            <div class="rivet rivet-bl"></div><div class="rivet rivet-br"></div>
 
-            <div class="space-y-5">
-                <!-- TOGGLE: Gunakan Gambar Unggahan -->
-                <div class="flex items-center p-3 bg-black/20 rounded-xl border border-amber-800/30">
-                    <input type="checkbox" id="useImageOnly" class="w-5 h-5 accent-amber-600 bg-black/40 border-amber-700 rounded focus:ring-amber-500 cursor-pointer" onchange="toggleDescriptionField()">
-                    <label for="useImageOnly" class="ml-3 text-sm font-medium text-amber-200/90 cursor-pointer">
-                        <i class="fas fa-image mr-1 text-amber-400"></i> Gunakan Gambar Unggahan (Nano Banana / Flow)
-                    </label>
-                    <span class="ml-auto text-amber-400/70 text-xs"><i class="far fa-question-circle" title="Deskripsi subjek tidak diperlukan. Prompt hanya berisi efek kamera."></i></span>
-                </div>
+            <div class="flex justify-center mb-8">
+                <div class="brass-plate text-xl tracking-wider">Konfigurasi</div>
+            </div>
 
-                <!-- Deskripsi Subjek -->
-                <div>
-                    <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
-                        <i class="fas fa-pen mr-1 text-amber-600"></i> Deskripsi Subjek <span id="subjectRequired" class="text-amber-400">*</span>
-                    </label>
-                    <textarea id="subject" rows="3" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all resize-none text-amber-100 placeholder:text-stone-500" placeholder="Contoh: A young woman sitting in a retro diner, drinking coffee... (Gunakan Bahasa Inggris)"></textarea>
-                    <p class="text-xs text-amber-500/60 mt-1" id="descHint">Wajib diisi jika tidak menggunakan gambar unggahan.</p>
-                </div>
-
-                <!-- Tipe Subjek & Ekspresi -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
-                            <i class="fas fa-cube mr-1 text-amber-600"></i> Tipe Subjek
-                        </label>
-                        <select id="entityType" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all">
-                            <option value="Person">👤 Person (Orang)</option>
-                            <option value="Object">📦 Object (Benda)</option>
-                            <option value="Animal">🐾 Animal (Hewan)</option>
-                            <option value="Landscape">🏞️ Landscape (Pemandangan)</option>
-                            <option value="Architecture">🏛️ Architecture (Bangunan)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
-                            <i class="far fa-smile mr-1 text-amber-600"></i> Ekspresi / Mood
-                        </label>
-                        <select id="expression" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all">
-                            <option value="Natural neutral expression">Natural / Netral</option>
-                            <option value="Smiling softly">Tersenyum lembut</option>
-                            <option value="Serious / Intense">Serius / Intens</option>
-                            <option value="Candid / Laughing">Candid / Tertawa</option>
-                            <option value="Pensive">Melamun / Kontemplatif</option>
-                            <option value="Joyful">Gembira</option>
-                            <option value="Mysterious">Misterius</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Kategori & Gaya -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
-                            <i class="fas fa-camera mr-1 text-amber-600"></i> Kategori
-                        </label>
-                        <select id="category" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all" onchange="updateStyles()">
-                            <!-- Populated by JS -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
-                            <i class="fas fa-film mr-1 text-amber-600"></i> Gaya Spesifik
-                        </label>
-                        <select id="style" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all">
-                            <!-- Populated by JS -->
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Pencahayaan -->
-                <div>
-                    <label class="block text-sm font-medium text-amber-200/80 mb-1.5">
-                        <i class="fas fa-sun mr-1 text-amber-600"></i> Pencahayaan
-                    </label>
-                    <select id="lighting" class="w-full px-4 py-3 input-dark rounded-xl focus:outline-none transition-all">
-                        <!-- Populated by JS -->
-                    </select>
-                </div>
-
-                <!-- Midjourney & AR -->
-                <div class="mt-3 p-4 rounded-xl bg-black/20 border border-amber-800/20">
-                    <div class="flex items-center mb-3">
-                        <input type="checkbox" id="mjMode" class="w-5 h-5 accent-amber-600 bg-black/40 border-amber-700 rounded focus:ring-amber-500 cursor-pointer" checked onchange="toggleAr()">
-                        <label for="mjMode" class="ml-3 text-sm font-medium text-amber-200/80 cursor-pointer">
-                            Format Midjourney (--ar)
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                
+                <!-- Kolom Saklar & Dial -->
+                <div class="space-y-6">
+                    
+                    <!-- Toggle Mode Gambar -->
+                    <div class="bg-[#1a130e] p-3 rounded-lg border border-[#3a2a1f] shadow-inner">
+                        <label class="retro-toggle flex items-center cursor-pointer justify-between" title="Gunakan Gambar Unggahan (Nano Banana / Flow)">
+                            <span class="text-xs text-[#d4af37] uppercase font-bold tracking-wider mr-2">Mode Gambar</span>
+                            <div class="relative">
+                                <input type="checkbox" id="useImageOnly" class="sr-only" onchange="toggleDescriptionField()">
+                                <div class="block bg-black w-10 h-6 rounded-full shadow-inner border border-[#3a2a1f]"></div>
+                                <div class="dot absolute left-1 top-1 bg-gradient-to-b from-gray-400 to-gray-600 w-4 h-4 rounded-full transition transform shadow-md"></div>
+                            </div>
                         </label>
                     </div>
-                    <div id="arContainer" class="pl-8 transition-all duration-300">
-                        <select id="aspectRatio" class="w-full px-3 py-2 input-dark rounded-lg focus:outline-none text-sm">
-                            <option value="--ar 3:2">3:2 (35mm / Landscape)</option>
-                            <option value="--ar 4:3">4:3 (Digital Old / CRT)</option>
-                            <option value="--ar 1:1">1:1 (Square / Polaroid)</option>
-                            <option value="--ar 16:9">16:9 (Cinematic)</option>
-                            <option value="--ar 9:16">9:16 (Portrait / HP)</option>
-                        </select>
+
+                    <!-- Input Selectors (Dials) -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-[#a89478] uppercase mb-1 font-bold">Kategori</label>
+                            <select id="category" class="w-full px-3 py-2 mechanical-input text-sm" onchange="updateStyles()">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-[#a89478] uppercase mb-1 font-bold">Gaya Spesifik</label>
+                            <select id="style" class="w-full px-3 py-2 mechanical-input text-sm">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-[#a89478] uppercase mb-1 font-bold">Pencahayaan</label>
+                            <select id="lighting" class="w-full px-3 py-2 mechanical-input text-sm">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
                     </div>
+
+                    <!-- Tombol Generate Bulat -->
+                    <div class="flex justify-center pt-4">
+                        <button onclick="generatePrompt()" class="brass-button w-32 h-32 flex-col gap-1 hover:brightness-110">
+                            <span class="text-sm uppercase tracking-wider block">Hasilkan</span>
+                            <span class="text-lg font-bold block">Prompt</span>
+                        </button>
+                    </div>
+
                 </div>
 
-                <!-- Generate Button -->
-                <button onclick="generatePrompt()" class="w-full btn-generate font-semibold py-3.5 px-4 rounded-xl shadow-lg flex justify-center items-center gap-2 mt-2 pulse-animation">
-                    <i class="fas fa-magic text-amber-300"></i> Hasilkan Prompt
-                </button>
+                <!-- Kolom Clipboard & Ekstra -->
+                <div class="space-y-6">
+                    
+                    <!-- Kertas Catatan -->
+                    <div class="clipboard-paper p-4 pt-6 h-48 flex flex-col mt-2">
+                        <div class="clipboard-clip"></div>
+                        <label class="block text-sm font-bold mb-2 border-b border-[#d1c0a5] pb-1">Deskripsi Subjek</label>
+                        <textarea id="subject" class="w-full h-full resize-none focus:outline-none" placeholder="Tulis apa yang ingin Anda potret... (Bahasa Inggris)"></textarea>
+                    </div>
+
+                    <!-- Tipe & Ekspresi -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-[#a89478] uppercase mb-1 font-bold">Tipe Subjek</label>
+                            <select id="entityType" class="w-full px-3 py-2 mechanical-input text-sm">
+                                <option value="Person">Person (Orang)</option>
+                                <option value="Object">Object (Benda)</option>
+                                <option value="Animal">Animal (Hewan)</option>
+                                <option value="Landscape">Landscape (Pemandangan)</option>
+                                <option value="Architecture">Architecture (Bangunan)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-[#a89478] uppercase mb-1 font-bold">Ekspresi / Mood</label>
+                            <select id="expression" class="w-full px-3 py-2 mechanical-input text-sm">
+                                <option value="Natural neutral expression">Natural / Netral</option>
+                                <option value="Smiling softly">Tersenyum lembut</option>
+                                <option value="Serious / Intense">Serius / Intens</option>
+                                <option value="Candid / Laughing">Candid / Tertawa</option>
+                                <option value="Pensive">Melamun / Kontemplatif</option>
+                                <option value="Joyful">Gembira</option>
+                                <option value="Mysterious">Misterius</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- AR / Midjourney -->
+                    <div class="bg-[#1a130e] p-3 rounded-lg border border-[#3a2a1f] shadow-inner mt-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs text-[#d4af37] uppercase font-bold tracking-wider">Format Midjourney (--ar)</span>
+                            <label class="retro-toggle flex items-center cursor-pointer">
+                                <input type="checkbox" id="mjMode" class="sr-only" checked onchange="toggleAr()">
+                                <div class="block bg-black w-8 h-4 rounded-full shadow-inner border border-[#3a2a1f]"></div>
+                                <div class="dot absolute left-0.5 top-0.5 bg-gray-400 w-3 h-3 rounded-full transition transform shadow-md"></div>
+                            </label>
+                        </div>
+                        <div id="arContainer">
+                            <select id="aspectRatio" class="w-full px-2 py-1 mechanical-input text-sm">
+                                <option value="--ar 3:2">3:2 (35mm / Landscape)</option>
+                                <option value="--ar 4:3">4:3 (Digital Old / CRT)</option>
+                                <option value="--ar 1:1">1:1 (Square / Polaroid)</option>
+                                <option value="--ar 16:9">16:9 (Cinematic)</option>
+                                <option value="--ar 9:16">9:16 (Portrait / HP)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
 
-        <!-- Kolom Hasil -->
-        <div class="lg:col-span-5 flex flex-col">
-            <div class="glass-panel rounded-2xl p-6 md:p-7 backdrop-blur-lg flex-1 flex flex-col">
-                <h2 class="text-xl font-semibold mb-4 pb-3 border-b border-amber-700/30 flex items-center text-amber-200">
-                    <i class="fas fa-terminal w-6 text-amber-500"></i> Hasil Prompt
-                </h2>
-                <p class="text-xs text-amber-300/60 mb-3 flex items-center gap-1"><i class="fas fa-copy"></i> Copy & paste ke AI generator</p>
-                <textarea id="result" rows="15" class="w-full px-4 py-3 input-dark rounded-xl border-2 border-dashed border-amber-800/40 focus:outline-none flex-grow font-mono text-sm leading-relaxed resize-none transition-all" readonly placeholder="Prompt terstruktur akan muncul..."></textarea>
-                <button onclick="copyPrompt()" class="mt-4 w-full bg-amber-800/40 hover:bg-amber-700/50 text-amber-100 font-medium py-3 px-4 rounded-xl border border-amber-700/30 transition-all flex justify-center items-center gap-2 backdrop-blur-sm">
-                    <i class="far fa-copy"></i> Salin ke Clipboard
+        <!-- PANEL KANAN (Meja & Polaroid) -->
+        <div class="lg:col-span-6 flex flex-col items-center justify-center relative min-h-[500px]">
+            
+            <div class="brass-plate text-xl tracking-wider mb-8 absolute top-0">Hasil Prompt</div>
+
+            <!-- Polaroid Frame -->
+            <div class="polaroid-frame w-full max-w-md relative z-10 mt-12">
+                <!-- Inner Screen for CRT text -->
+                <div class="polaroid-screen w-full h-96 p-4 rounded-sm flex flex-col">
+                    <p class="text-[#ffb000] text-sm opacity-50 mb-2 font-mono">USER_PROMPT_READY></p>
+                    <textarea id="result" class="w-full h-full bg-transparent resize-none focus:outline-none crt-text relative z-20" readonly placeholder="Prompt terstruktur akan muncul..."></textarea>
+                </div>
+                <!-- Handwriting text -->
+                <div class="handwriting flex justify-between w-[90%]">
+                    <span>Prompt #<span id="randNum">453</span></span>
+                    <span id="labelTipe">Kategori</span>
+                </div>
+            </div>
+
+            <!-- Copy Button Area (Bawah Polaroid) -->
+            <div class="mt-8 flex gap-4 relative z-20">
+                <button onclick="copyPrompt()" class="bg-[#d4af37] hover:bg-[#e6c27a] text-[#2b1d14] font-bold py-3 px-8 border-b-4 border-[#a67c27] hover:border-[#d4af37] hover:translate-y-[2px] transition-all rounded shadow-lg uppercase tracking-wider text-sm flex items-center">
+                    <i class="fas fa-copy mr-2"></i> Salin ke Clipboard
                 </button>
             </div>
+
         </div>
     </main>
 
-    <!-- Tips -->
-    <div class="max-w-5xl w-full mt-6">
-        <div class="glass-panel rounded-2xl p-5 border-l-4 border-amber-600 text-sm text-amber-200/90 flex items-start gap-3">
-            <i class="fas fa-flask text-amber-400 text-xl mt-0.5"></i>
-            <div>
-                <h3 class="font-bold mb-1 text-amber-300">💡 Tips Darkroom</h3>
-                <ul class="list-disc list-inside space-y-1 text-amber-200/70">
-                    <li>Aktifkan <span class="text-amber-300">"Gunakan Gambar Unggahan"</span> jika ingin memberi efek retro pada foto yang sudah ada (Nano Banana).</li>
-                    <li>Gaya <i>Phone Jadul</i> otomatis menambahkan <i>low quality, pixelated</i>.</li>
-                    <li>Efek <i>date stamp</i> sering muncul di gaya Disposable / VHS.</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast -->
-    <div id="toast" class="fixed bottom-6 right-6 bg-amber-900/90 backdrop-blur-sm text-amber-100 px-5 py-3 rounded-lg shadow-2xl transition-all duration-300 transform translate-y-10 opacity-0 flex items-center z-50 border border-amber-700/40">
-        <i id="toast-icon" class="fas fa-check-circle mr-3 text-amber-300"></i>
-        <span id="toast-message" class="font-medium">Pesan</span>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-[#1a130e] border-2 border-[#d4af37] text-[#e5d3b3] px-6 py-4 rounded shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 flex items-center z-50 font-mono">
+        <i id="toast-icon" class="fas fa-check-square mr-3 text-[#d4af37]"></i>
+        <span id="toast-message" class="font-bold tracking-wide">SYSTEM: OK</span>
     </div>
 
     <script>
-        // ========== DATABASE KAMERA ==========
+        // ========== MENGGUNAKAN DATABASE FULL DARI VERSI ASLI ==========
         const cameraDatabase = {
             analog: {
                 name: "🎞️ Analog 35mm",
@@ -334,27 +481,20 @@
             return 'Vintage lens';
         }
 
-        // Toggle deskripsi enable/disable
+        // Toggle deskripsi enable/disable (Sama persis dengan aslinya)
         function toggleDescriptionField() {
             const useImage = document.getElementById('useImageOnly').checked;
             const subjectArea = document.getElementById('subject');
-            const requiredSpan = document.getElementById('subjectRequired');
-            const descHint = document.getElementById('descHint');
             
-            subjectArea.readOnly = useImage;
+            subjectArea.disabled = useImage;
             if (useImage) {
-                subjectArea.value = ''; // opsional, bisa juga dibiarkan isinya
-                subjectArea.placeholder = 'Deskripsi dinonaktifkan (menggunakan gambar unggahan)';
-                requiredSpan.style.display = 'none';
-                descHint.innerHTML = '<i class="fas fa-image mr-1"></i> Mode gambar aktif. Deskripsi tidak diperlukan.';
+                subjectArea.value = '';
+                subjectArea.placeholder = '[MODE GAMBAR] Deskripsi dinonaktifkan.';
             } else {
-                subjectArea.placeholder = 'Contoh: A young woman sitting in a retro diner, drinking coffee...';
-                requiredSpan.style.display = 'inline';
-                descHint.innerHTML = 'Wajib diisi jika tidak menggunakan gambar unggahan.';
+                subjectArea.placeholder = 'Contoh: A young woman sitting in a retro diner...';
             }
         }
 
-        // Inisialisasi
         window.onload = function() {
             const catSelect = document.getElementById('category');
             const lightSelect = document.getElementById('lighting');
@@ -372,7 +512,8 @@
             });
             updateStyles();
             toggleAr();
-            toggleDescriptionField(); // set state awal
+            toggleDescriptionField();
+            document.getElementById('randNum').innerText = Math.floor(Math.random() * 900) + 100;
         };
 
         function updateStyles() {
@@ -390,16 +531,16 @@
         function toggleAr() {
             const ar = document.getElementById('arContainer');
             const checked = document.getElementById('mjMode').checked;
-            ar.classList.toggle('hidden-ar', !checked);
+            ar.style.display = checked ? 'block' : 'none';
         }
 
+        // ========== LOGIKA GENERATE PROMPT ASLI ==========
         function generatePrompt() {
             const useImage = document.getElementById('useImageOnly').checked;
             const subject = document.getElementById('subject').value.trim();
             
-            // Validasi
             if (!useImage && !subject) {
-                showToast('Deskripsi subjek wajib diisi atau aktifkan mode gambar!', 'error');
+                showToast('SYS_ERR: Deskripsi subjek wajib diisi!', 'error');
                 document.getElementById('subject').focus();
                 return;
             }
@@ -418,7 +559,6 @@
             
             let structured = `[INSTRUKSI SISTEM]\n> MODE KONSISTENSI ESTETIKA: Terapkan efek kamera/film retro yang dipilih. Pertahankan ketidaksempurnaan analog.\n\n`;
             
-            // Bagian Subjek hanya jika tidak pakai gambar
             if (!useImage) {
                 structured += `[DETAIL SUBJEK]\n- Tipe: ${entityType}\n- Deskripsi: ${subject}\n- Ekspresi/Mood: ${expression}\n- Batasan: TEPAT SATU subjek utama.\n\n`;
             } else {
@@ -443,20 +583,23 @@
             
             const resultBox = document.getElementById('result');
             resultBox.value = structured;
-            resultBox.classList.add('fade-in');
-            setTimeout(()=>resultBox.classList.remove('fade-in'),500);
-            showToast('Prompt terstruktur siap!', 'success');
+            
+            // Update Label Polaroid
+            document.getElementById('labelTipe').innerText = catObj.name.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+            document.getElementById('randNum').innerText = Math.floor(Math.random() * 900) + 100;
+
+            showToast('SYS_MSG: Prompt Terstruktur Siap', 'success');
         }
 
         function copyPrompt() {
             const txt = document.getElementById('result').value;
-            if(!txt) { showToast('Prompt kosong', 'error'); return; }
-            navigator.clipboard.writeText(txt).then(()=>showToast('Tersalin!', 'success'))
+            if(!txt) { showToast('SYS_ERR: Prompt kosong', 'error'); return; }
+            navigator.clipboard.writeText(txt).then(()=>showToast('SYS_MSG: Tersalin ke Clipboard', 'success'))
             .catch(()=>{ 
                 const ta=document.getElementById('result'); 
                 ta.select(); 
                 document.execCommand('copy'); 
-                showToast('Copied (fallback)'); 
+                showToast('SYS_MSG: Copied (fallback)'); 
             });
         }
 
@@ -465,17 +608,18 @@
             const icon = document.getElementById('toast-icon');
             const msgEl = document.getElementById('toast-message');
             msgEl.innerText = msg;
-            toast.classList.remove('translate-y-10','opacity-0','bg-red-900','bg-green-900','bg-amber-900');
-            if(type==='success') { toast.classList.add('bg-green-900/80'); icon.className='fas fa-check-circle mr-3 text-green-300'; }
-            else if(type==='error') { toast.classList.add('bg-red-900/80'); icon.className='fas fa-exclamation-circle mr-3 text-red-300'; }
-            else { toast.classList.add('bg-amber-900/80'); icon.className='fas fa-info-circle mr-3 text-amber-300'; }
-            toast.classList.remove('translate-y-10','opacity-0');
-            setTimeout(()=>toast.classList.add('translate-y-10','opacity-0'),3000);
+            
+            toast.classList.remove('translate-y-20','opacity-0', 'border-red-500', 'text-red-400');
+            if(type==='error') { 
+                toast.classList.add('border-red-500', 'text-red-400'); 
+                icon.className='fas fa-exclamation-triangle mr-3 text-red-500'; 
+            } else { 
+                icon.className='fas fa-check-square mr-3 text-[#d4af37]'; 
+            }
+            
+            toast.classList.remove('translate-y-20','opacity-0');
+            setTimeout(()=>toast.classList.add('translate-y-20','opacity-0'),3000);
         }
     </script>
-    <style>
-        .hidden-ar { display: none !important; opacity: 0; }
-        #arContainer { transition: opacity 0.3s; }
-    </style>
 </body>
 </html>
