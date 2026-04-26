@@ -268,6 +268,50 @@ const STYLE_PROMPTS = {
   "Pinhole":"pinhole photography, extreme wide, infinite DOF, soft, long exposure blur",
 };
 
+const GENDER_OPTS = [
+  {id:'unspecified',label:'Tidak Spesifik'},
+  {id:'male',label:'Male'},
+  {id:'female',label:'Female'},
+  {id:'nonbinary',label:'Non-binary'},
+];
+
+const EXPRESSION_OPTS = [
+  {id:'neutral',label:'Natural / Netral',prompt:'Natural neutral expression'},
+  {id:'smile',label:'Tersenyum Lembut',prompt:'Smiling softly'},
+  {id:'serious',label:'Serius / Intens',prompt:'Serious, intense gaze'},
+  {id:'candid',label:'Candid / Tertawa',prompt:'Candid laughing expression'},
+  {id:'pensive',label:'Melamun',prompt:'Pensive, contemplative look'},
+  {id:'mysterious',label:'Misterius',prompt:'Mysterious expression'},
+];
+
+const LENS_HINTS = {
+  'Kodak Portra 400':'Prime 50mm f/1.4',
+  'Fujifilm Superia':'35mm f/2.8',
+  'CineStill 800T':'Prime 50mm f/1.4',
+  'Kodachrome 64':'Zoom 35-70mm f/3.5',
+  'Lomo LC-A':'Minitar-1 32mm f/2.8',
+  'Redscale':'Fixed 38mm f/2.8',
+  'Expired Film':'Plastic fixed 35mm',
+  'Film Soup':'Plastic fixed 35mm',
+  'Polaroid SX-70':'Polaroid 116mm f/8',
+  'Polaroid Pudar':'Polaroid 116mm f/8',
+  'Fuji Instax':'Fujinon 60mm f/12.7',
+  'Expired Polaroid':'Polaroid 116mm f/8',
+  'Sony Cyber-shot':'Fixed zoom 34-102mm f/2.8',
+  'Webcam 2000s':'Fixed focus VGA lens',
+  'Nokia VGA':'Fixed focus VGA',
+  'iPhone Awal':'Fixed 3.85mm f/2.8',
+  'Ilford HP5':'Leica Summicron 50mm f/2',
+  'Kodak T-Max':'Planar 80mm f/2.8',
+  'Wet Plate 1850s':'Petzval portrait 150mm f/3.6',
+  'Cyanotype':'Contact print — no lens',
+  'VHS Camcorder':'Fixed zoom f/1.8',
+  'CCTV Security':'Fisheye 2.8mm f/1.2',
+  'Holga 120':'Holga plastic 60mm f/8',
+  'Diana F+':'Diana plastic 75mm f/11',
+  'Pinhole':'Pinhole ~0.3mm f/150',
+};
+
 const LIGHTING_OPTS = [
   {id:"default",label:"Default",prompt:""},
   {id:"harsh_flash",label:"Harsh Flash",prompt:"harsh direct flash, overexposed, stark contrast"},
@@ -416,6 +460,9 @@ function App() {
   const [mjMode,setMjMode] = useState(true);
   const [arVal,setArVal] = useState('3:2');
   const [mjVer,setMjVer] = useState('v6.0');
+  // Extra fields
+  const [gender,setGender] = useState('unspecified');
+  const [expression,setExpression] = useState('neutral');
   // Subject
   const [subject,setSubject] = useState('');
   // Output
@@ -481,9 +528,35 @@ function App() {
     setPromptNum(Math.floor(Math.random()*900)+100);
     const {final,catName} = buildPrompt();
     setPromptCat(catName);
-    const modeTag = modeGambar ? '[MODE GAMBAR] ' : '';
-    const arTag = mjMode ? `\n\n--ar ${arVal} --${mjVer}` : '';
-    const structured = `${modeTag}${subject.trim()||'(dari gambar)'},\n${STYLE_PROMPTS[style]||style}${LIGHTING_OPTS.find(l=>l.id===lighting)?.prompt?', '+LIGHTING_OPTS.find(l=>l.id===lighting).prompt:''},\nphotorealistic, ultra detailed, analog masterpiece${arTag}`;
+    const catObj2 = CATEGORIES[category];
+    const stylePr2 = STYLE_PROMPTS[style]||style;
+    const lightObj2 = LIGHTING_OPTS.find(l=>l.id===lighting);
+    const lightLabel = lightObj2?.label||'Default mengikuti karakter kamera';
+    const lightPr2 = lightObj2?.prompt||'';
+    const exprObj = EXPRESSION_OPTS.find(e=>e.id===expression);
+    const exprPrompt = exprObj?.prompt||'Natural neutral expression';
+    const genderObj = GENDER_OPTS.find(g=>g.id===gender);
+    const genderLabel = gender==='unspecified'?'Tidak Spesifik':genderObj?.label||'';
+    const lensHint = LENS_HINTS[style]||'Vintage lens';
+    const arLabel = mjMode ? arVal : 'Default';
+
+    // Build final prompt parts
+    let finalParts = [];
+    if(!modeGambar && subject.trim()) finalParts.push(subject.trim());
+    finalParts.push(stylePr2);
+    if(lightPr2) finalParts.push(lightPr2);
+    if(exprPrompt && gender!=='unspecified' && !['landscape','arsitektur','object'].some(t=>activeSubjects[t])) finalParts.push(exprPrompt);
+    finalParts.push('photorealistic, ultra detailed, authentic analog photography masterpiece');
+    if(mjMode) finalParts.push(`--ar ${arVal} --${mjVer}`);
+    const finalPrompt = finalParts.join(', ');
+
+    const activeTypeLabels = Object.entries(activeSubjects).filter(([,v])=>v).map(([k])=>{
+      const found = SUBJECT_TYPES.find(s=>s.id===k); return found?.label||k;
+    }).join(', ')||'Umum';
+
+    const structured =
+`[INSTRUKSI SISTEM]\n> MODE KONSISTENSI ESTETIKA KETAT: Terapkan estetika kamera/film retro yang dipilih secara konsisten. Pertahankan ketidaksempurnaan analog.\n\n[DETAIL SUBJEK]\n- Deskripsi Subjek: ${modeGambar?'(dari gambar upload)':subject.trim()||'(kosong)'}\n- Tipe: ${activeTypeLabels}${gender!=='unspecified'?'\n- Gender: '+genderLabel:''}\n- Ekspresi: ${exprPrompt}\n- Batasan Entitas: KRITIS — TEPAT SATU orang/objek seperti yang dijelaskan. TIDAK ADA karakter tambahan.\n\n[GAYA & ATRIBUT]\n- Kategori Kamera: ${catObj2.name}\n- Film/Gaya Spesifik: ${style}\n- Kata Kunci Estetika: ${stylePr2}\n- Pencahayaan: ${lightPr2||lightLabel}\n\n[FOTOGRAFI & LINGKUNGAN]\n- Latar Belakang: Konteks retro yang sesuai dengan deskripsi\n- Rasio Aspek: ${arLabel}\n- Komposisi: Komposisi vintage autentik dengan sedikit ketidaksempurnaan (tilt, grain, light leaks)\n- Lensa Kamera: ${lensHint}\n\n[PROMPT GENERASI FINAL]\n${finalPrompt}`;
+
     setResultText(structured);
     const entry = {ts:Date.now(),category:catName,style,subject:subject.trim()||'(gambar)',prompt:structured,ar:arVal};
     setHistory(prev=>[...prev.slice(-29),entry]);
@@ -576,6 +649,18 @@ function App() {
           </div>
 
           {/* MODE GAMBAR */}
+          <div className="section-label">Gender Subjek</div>
+          <div style={{marginBottom:8}}>
+            <DialSelect value={gender} onChange={setGender}
+              options={GENDER_OPTS.map(g=>({id:g.id,name:g.label}))}/>
+          </div>
+
+          <div className="section-label">Ekspresi / Mood</div>
+          <div style={{marginBottom:8}}>
+            <DialSelect value={expression} onChange={setExpression}
+              options={EXPRESSION_OPTS.map(e=>({id:e.id,name:e.label}))}/>
+          </div>
+
           <div className="section-label">Mode Gambar</div>
           <div className="inline-toggle-row" onClick={()=>setModeGambar(p=>!p)}>
             <span className={`inline-toggle-label ${modeGambar?'active':''}`}>
